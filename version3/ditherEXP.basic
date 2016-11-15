@@ -1,0 +1,127 @@
+fin%=OPENIN("in.bmp")
+fout%=OPENOUT("out.bmp")
+
+param%=OPENIN("P")
+pal%=OPENIN("PAL")
+DIM diffs%(4): DIM values%(3,3)
+DIM valuediffs(4): DIM pixelsin%(3)
+
+xa%=FNConvAscNumbers(3,param%)
+xb%=FNConvAscNumbers(3,param%)
+
+IF FNConvAscNumbers(1,param%)>0 THEN xa%=xa%*-1 
+IF FNConvAscNumbers(1,param%)>0 THEN xb%=xb%*-1 
+
+values%(0,2)=FNConvAscNumbers(3,pal%)
+values%(0,1)=FNConvAscNumbers(3,pal%)
+values%(0,0)=FNConvAscNumbers(3,pal%)
+
+values%(1,2)=FNConvAscNumbers(3,pal%)
+values%(1,1)=FNConvAscNumbers(3,pal%)
+values%(1,0)=FNConvAscNumbers(3,pal%)
+
+values%(2,2)=FNConvAscNumbers(3,pal%)
+values%(2,1)=FNConvAscNumbers(3,pal%)
+values%(2,0)=FNConvAscNumbers(3,pal%)
+
+values%(3,2)=FNConvAscNumbers(3,pal%)
+values%(3,1)=FNConvAscNumbers(3,pal%)
+values%(3,0)=FNConvAscNumbers(3,pal%)
+
+
+REM where to find the pixel array
+PTR#fin%=10
+location%=BGET#fin%
+location%+=BGET#fin%*256
+location%+=BGET#fin%*256*256
+location%+=BGET#fin%*256*256*256
+REM load width information from header
+PTR#fin%=18
+width%=BGET#fin%
+width%+=BGET#fin%*256
+width%+=BGET#fin%*256*256
+width%+=BGET#fin%*256*256*256
+
+PTR#fin%=0: PTR#fout%=0
+REPEAT
+ BPUT#fout%,BGET#fin%
+UNTIL PTR#fin%=location%
+
+x%=0: y%=0: ycounter%=0
+
+REPEAT
+
+ PROCgetpixel
+ 
+ FOR i%=0 TO 3
+  valuediffs(i%)=0
+ NEXT
+
+ FOR j%=0 TO 3
+  FOR i%=0 TO 2
+   valuediffs(j%)+=FNnewgetdifference( pixelsin%(i%),values%(j%,i%) )
+  NEXT
+ NEXT
+
+ PROCnewwritepixel(FNgetcolourmatch)
+ 
+UNTIL EOF#fin%
+
+CLOSE#fin%: CLOSE#fout%: CLOSE#param%: CLOSE#pal%
+
+END
+
+DEFPROCgetpixel
+ LOCAL in%,null%
+
+ x%+=1
+ ycounter%+=1
+ IF ycounter%>=width% THEN ycounter%=0: y%+=1: 
+ 
+ IF y%MOD2>0 THEN
+  pixelsin%(0)=BGET#fin%-xa%: pixelsin%(1)=BGET#fin%-xa%: pixelsin%(2)=BGET#fin%-xa%
+ ELSE
+  pixelsin%(0)=BGET#fin%+xb%: pixelsin%(1)=BGET#fin%+xb%: pixelsin%(2)=BGET#fin%+xb%
+ ENDIF
+
+ENDPROC
+
+DEFPROCnewwritepixel(in%)
+
+ FOR i%=0 TO 2 
+  BPUT#fout%,values%(in%,i%)
+ NEXT
+
+ENDPROC
+
+DEFFNConvAscNumbers(howmany%,fp%)
+ LOCAL i%,j%,in%,result%
+ 
+ FOR i%=howmany% TO 1 STEP -1
+  in%=BGET#fp%-48
+  FOR j%=i% TO 1 STEP -1
+
+   in%=in%*10
+
+  NEXT 
+  result%+=in%
+ NEXT
+
+=result%DIV10
+
+DEFFNnewgetdifference(ina%,inb%)
+ LOCAL bigval%,smallval%
+
+ IF ina%>inb% THEN bigval%=ina%:smallval%=inb% ELSE bigval%=inb%:smallval%=ina%
+
+=bigval%-smallval%
+
+DEFFNgetcolourmatch
+ LOCAL i%,lo%,result%,lopointer%
+ lo%=111111
+
+ FOR i%=0 TO 3
+  IF valuediffs(i%)<lo% THEN lo%=valuediffs(i%): lopointer%=i%
+ NEXT
+
+=lopointer%
