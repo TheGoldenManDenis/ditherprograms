@@ -1,0 +1,57 @@
+fin%=OPENIN("in.bmp")
+fout%=OPENOUT("out.bmp")
+
+REM where to find the pixel array
+PTR#fin%=10
+location%=BGET#fin%
+location%+=BGET#fin%*256
+location%+=BGET#fin%*256*256
+location%+=BGET#fin%*256*256*256
+REM load width information from header
+PTR#fin%=18
+width%=BGET#fin%
+width%+=BGET#fin%*256
+width%+=BGET#fin%*256*256
+width%+=BGET#fin%*256*256*256
+
+PTR#fin%=0: PTR#fout%=0
+REPEAT
+ BPUT#fout%,BGET#fin%
+UNTIL PTR#fin%=location%
+
+x%=0: y%=0
+
+REPEAT
+
+ pixel%=FNgetpixel
+
+ IF 148 + SIN( (x%*4)+(640*y%*4) )*100 >= pixel% THEN
+  PROCwritepixel(0)
+ ELSE
+  PROCwritepixel(255)
+ ENDIF
+
+UNTIL EOF#fin%
+
+CLOSE#fin%: CLOSE#fout%
+
+END
+
+DEFFNgetpixel
+ LOCAL in%
+
+ x%+=1
+ IF x%>=width% THEN y%+=1: x%=0
+ 
+ in%=BGET#fin%: in%+=BGET#fin%: in%+=BGET#fin%:
+
+=in%DIV3
+
+DEFPROCwritepixel(in%)
+
+ BPUT#fout%,in%
+ BPUT#fout%,in%
+ BPUT#fout%,in%
+
+ENDPROC
+
