@@ -1,0 +1,121 @@
+fin%=OPENIN("in.bmp")
+fout%=OPENOUT("out.bmp")
+
+param%=OPENIN("P")
+DIM diffs%(3): DIM values%(3)
+values%(0)=FNConvAscNumbers(3)
+values%(1)=FNConvAscNumbers(3)
+values%(2)=FNConvAscNumbers(3)
+values%(3)=FNConvAscNumbers(3)
+
+REM where to find the pixel array
+PTR#fin%=10
+location%=BGET#fin%
+location%+=BGET#fin%*256
+location%+=BGET#fin%*256*256
+location%+=BGET#fin%*256*256*256
+REM load width information from header
+PTR#fin%=18
+width%=BGET#fin%
+width%+=BGET#fin%*256
+width%+=BGET#fin%*256*256
+width%+=BGET#fin%*256*256*256
+
+REM ON ERROR CLS: PRINT ERL: PRINT x% y% in%: PRINT PTR#fin%: PRINT EXT#fin%: CLOSE#fin%: END
+
+PTR#fin%=0: PTR#fout%=0
+REPEAT
+ BPUT#fout%,BGET#fin%
+UNTIL PTR#fin%=location%
+
+x%=0: y%=0: ycounter%=0
+
+REPEAT
+
+ IF y%MOD2>0 THEN
+  PROCnewwritepixel(FNgetclosestvalue(FNgetpixel)) 
+ ELSE
+  PROCnewwritepixel(FNgetclosestvalue(FNgetpixel-30)) 
+ ENDIF
+ 
+UNTIL EOF#fin%
+
+CLOSE#fin%: CLOSE#fout%: CLOSE#param%
+
+END
+
+DEFFNgetpixel
+ LOCAL in%,null%
+
+ x%+=1
+ ycounter%+=1
+ IF ycounter%>=width% THEN ycounter%=0: y%+=1: 
+ 
+ in%=BGET#fin%: in%+=BGET#fin%: in%+=BGET#fin%
+
+=in%DIV3
+
+DEFPROCwritepixel(in%)
+
+ BPUT#fout%,in%
+ BPUT#fout%,in%
+ BPUT#fout%,in%
+
+ENDPROC
+
+DEFPROCnewwritepixel(in%)
+
+ CASE in% OF
+  WHEN 0: BPUT#fout%,0: BPUT#fout%,0: BPUT#fout%,0:
+  WHEN 1: BPUT#fout%,128: BPUT#fout%,128: BPUT#fout%,128:
+  WHEN 2: BPUT#fout%,192: BPUT#fout%,192: BPUT#fout%,192: 
+  WHEN 3: BPUT#fout%,255: BPUT#fout%,255: BPUT#fout%,255: 
+  OTHERWISE: BPUT#fout%,255: BPUT#fout%,0: BPUT#fout%,0:
+ ENDCASE
+
+
+ENDPROC
+
+DEFFNConvAscNumbers(howmany%)
+ LOCAL i%,j%,in%,result%
+ 
+ FOR i%=howmany% TO 1 STEP -1
+  in%=BGET#param%-48
+  FOR j%=i% TO 1 STEP -1
+
+   in%=in%*10
+
+  NEXT 
+  result%+=in%
+ NEXT
+
+=result%DIV10
+
+DEFFNgetclosestvalue(in%)
+ LOCAL i%,bigval%,smval%,result%
+ 
+ FOR i%=0 TO 3
+
+  IF in%>values%(i%) THEN
+   bigval%=in%
+   smval%=values%(i%)
+  ELSE
+   bigval%=values%(i%)
+   smval%=in%
+  ENDIF
+
+  diffs%(i%)=bigval%-smval%
+
+ NEXT
+
+ smallestval%=10000
+ FOR i%=0 TO 3
+
+  IF diffs%(i%)<smallestval% THEN
+   smallestval%=diffs%(i%)
+   result%=i%
+  ENDIF
+
+ NEXT
+ 
+=result%
