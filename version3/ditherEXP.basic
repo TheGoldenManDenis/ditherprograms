@@ -6,11 +6,14 @@ pal%=OPENIN("PAL")
 DIM diffs%(4): DIM values%(3,3)
 DIM valuediffs(4): DIM pixelsin%(3)
 
+
 xa%=FNConvAscNumbers(3,param%)
 xb%=FNConvAscNumbers(3,param%)
 
-IF FNConvAscNumbers(1,param%)>0 THEN xa%=xa%*-1 
-IF FNConvAscNumbers(1,param%)>0 THEN xb%=xb%*-1 
+
+REM PRINT xa% xb%
+
+
 
 values%(0,2)=FNConvAscNumbers(3,pal%)
 values%(0,1)=FNConvAscNumbers(3,pal%)
@@ -79,9 +82,13 @@ DEFPROCgetpixel
  IF ycounter%>=width% THEN ycounter%=0: y%+=1: 
  
  IF y%MOD2>0 THEN
-  pixelsin%(0)=BGET#fin%-xa%: pixelsin%(1)=BGET#fin%-xa%: pixelsin%(2)=BGET#fin%-xa%
+  pixelsin%(0)=BGET#fin%+xa%
+  pixelsin%(1)=BGET#fin%+xa%
+  pixelsin%(2)=BGET#fin%+xa%
  ELSE
-  pixelsin%(0)=BGET#fin%+xb%: pixelsin%(1)=BGET#fin%+xb%: pixelsin%(2)=BGET#fin%+xb%
+  pixelsin%(0)=BGET#fin%+xb%
+  pixelsin%(1)=BGET#fin%+xb%
+  pixelsin%(2)=BGET#fin%+xb%
  ENDIF
 
 ENDPROC
@@ -95,7 +102,17 @@ DEFPROCnewwritepixel(in%)
 ENDPROC
 
 DEFFNConvAscNumbers(howmany%,fp%)
- LOCAL i%,j%,in%,result%
+ LOCAL i%,j%,in%,result%,pointer%,minus%
+
+ pointer%=PTR#fp%
+ i%=BGET#fp%
+
+ IF i%=45 THEN
+  minus%=TRUE
+ ELSE
+  minus%=FALSE 
+  PTR#fp%=pointer%
+ ENDIF
  
  FOR i%=howmany% TO 1 STEP -1
   in%=BGET#fp%-48
@@ -107,7 +124,11 @@ DEFFNConvAscNumbers(howmany%,fp%)
   result%+=in%
  NEXT
 
-=result%DIV10
+ result%=result%DIV10
+
+ IF minus% THEN result%=result%*-1
+
+=result%
 
 DEFFNnewgetdifference(ina%,inb%)
  LOCAL bigval%,smallval%
