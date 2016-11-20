@@ -15,8 +15,8 @@ Download "ditherprograms_.tar.xz" and extract it to a folder, then use the scrip
 Where P1, P2, P3, P4 are each numbers from 0 to 999. The default setting is 15 100 140 200
 
 ################### For version 3 ###################
-./CONVscript.sh input.[anything] output.bmp [P1] [P2] [P3] [P4]
+./CONVscript.sh input.[anything] output.bmp [P1] [P2] 
 
-Where P1 and P2 are numbers from 0 to 999, and P3, P4 are either 0 or 1. The default setting is 30 30 0 0
+Where P1 and P2 are numbers from -999 to 999. The default setting is -30 30
 
 Edit the "PAL" file with a text editor to change the colour palette that it uses.
