@@ -4,7 +4,7 @@ A family of BBC Basic programs I wrote which convert pictures to reduced colours
 To run these you'll need a linux system with imagemagick and brandy (BBC Basic interpreter) installed.
 The input images must be a width which is a multiple of 4, otherwise the output result looks weird. I don't know why that happens.
 
-Download "ditherprograms_.tar.xz" and extract it to a folder, then use the scripts to operate the program, according to these instructions:
+Download "ditherprograms.tar.xz" and extract it to a folder, then use the scripts to operate the program, according to these instructions:
 
 ################### For versions 1 and 4 ###################
 ./CONVscript.sh input.[png/jpg/anything] output.bmp
